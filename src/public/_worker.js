@@ -4,12 +4,14 @@ const SESSION_COOKIE = '__session';
 export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
-		// 如果不是访问 API，也不是访问分享页面，直接放行让 Pages 渲染前端静态网页
-		if (!url.pathname.startsWith('/api') && !url.pathname.startsWith('/share')) {
-			return env.ASSETS.fetch(request);
+		
+		// 极其严格的判断：只有当路径真的以 /api 开头时，才走后端 D1 数据库逻辑
+		if (url.pathname.startsWith('/api')) {
+			return await handleApiRequest(request, env);
 		}
-		// 只有 API 和分享请求才走后端逻辑
-		return await handleApiRequest(request, env);
+		
+		// 剩下的所有请求（包含所有前端 HTML/CSS/JS/图片、分享页等），无条件交给 Pages 静态托管
+		return env.ASSETS.fetch(request);
 	},
 };
 
