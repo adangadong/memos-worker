@@ -3,6 +3,12 @@ const SESSION_DURATION_SECONDS = 30*86400; // Session 有效期: 30 天
 const SESSION_COOKIE = '__session';
 export default {
 	async fetch(request, env, ctx) {
+		const url = new URL(request.url);
+		// 如果不是访问 API，也不是访问分享页面，直接放行让 Pages 渲染前端静态网页
+		if (!url.pathname.startsWith('/api') && !url.pathname.startsWith('/share')) {
+			return env.ASSETS.fetch(request);
+		}
+		// 只有 API 和分享请求才走后端逻辑
 		return await handleApiRequest(request, env);
 	},
 };
